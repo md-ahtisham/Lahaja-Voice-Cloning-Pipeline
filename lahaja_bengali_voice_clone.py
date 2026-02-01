@@ -133,7 +133,7 @@ def load_and_filter_lahaja() -> pd.DataFrame:
     """
     print("📥 Loading Lahaja dataset from HuggingFace...")
     try:
-        dataset = load_dataset(Config.LAHAJA_DATASET, split="train")
+        dataset = load_dataset(Config.LAHAJA_DATASET, split="test")
         df = dataset.to_pandas()
         
         print(f"✅ Loaded {len(df)} total samples from Lahaja")
@@ -195,12 +195,10 @@ def load_tts_model():
     
     try:
         # Load with transformers pipeline
-        tts_pipeline = pipeline(
-            "text-to-speech",
-            model=Config.TTS_MODEL_ID,
-            device=Config.DEVICE,
-            torch_dtype=torch.float16 if Config.DEVICE == "cuda" else torch.float32,
-        )
+        from transformers import AutoProcessor, AutoModel
+        processor = AutoProcessor.from_pretrained(Config.TTS_MODEL_ID, trust_remote_code=True)
+        model = AutoModel.from_pretrained(Config.TTS_MODEL_ID, trust_remote_code=True)
+        tts_pipeline = {"processor": processor, "model": model} 
         print("✅ TTS model loaded successfully")
         return tts_pipeline
     
@@ -213,6 +211,7 @@ def load_tts_model():
             "text-to-speech",
             model=Config.TTS_MODEL_ID,
             device=Config.DEVICE,
+            trust_remote_code=True
         )
         return tts_pipeline
 
